@@ -3,7 +3,7 @@ import starlight from '@astrojs/starlight';
 
 export default defineConfig({
   site: 'https://nevinshine.github.io',
-  base: '/research-logs',
+  base: '/research-dossier',
 
   integrations: [
     starlight({
