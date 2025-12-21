@@ -20,15 +20,17 @@ export default defineConfig({
       customCss: ['./src/styles/custom.css'],
 
       sidebar: [
+        // Group 1: Automatically list everything in the '100-days' folder
         {
-          label: 'Research Logbook',
-          items: [
-            // CHANGE THIS LINK:
-            { label: '100 Days of DevSecOps', link: '/100-days/' },
-            { label: 'Sentinel Sandbox', link: '/sentinel/' },
-          ],
+            label: '100 Days of DevSecOps',
+            autogenerate: { directory: '100-days' },
         },
-      ],
+        // Group 2: Automatically list everything in the 'sentinel' folder
+        {
+            label: 'Sentinel Sandbox',
+            autogenerate: { directory: 'sentinel' },
+        },
+    ],
     }),
   ],
 });
