@@ -89,3 +89,47 @@ This change significantly improved anomaly score separation without modifying th
 Effective syscall-based detection depends more on **behavioral representation** than on model complexity.
 
 ---
+
+### // Runtime Anomaly Classification (Threshold-Calibrated)
+
+After training the Weightless Neural Network (DWN) on **normal syscall behavior only**, Sentinel introduces a **statistical decision layer** to convert raw model scores into actionable security signals.
+
+Rather than relying on labeled attack data, Sentinel uses **distribution-based calibration**:
+
+1. Collect anomaly scores from normal execution traces
+2. Estimate the score distribution (mean, standard deviation)
+3. Define decision thresholds using statistical deviation
+
+#### Threshold Levels
+| Severity | Definition |
+|--------|------------|
+| **NORMAL** | Score ≥ μ − 1σ |
+| **SUSPICIOUS** | μ − 2σ ≤ Score < μ − 1σ |
+| **ANOMALOUS** | μ − 3σ ≤ Score < μ − 2σ |
+| **CRITICAL** | Score < μ − 3σ |
+
+This approach mirrors how real intrusion detection systems operate:  
+**model behavior first, enforce policy later**.
+
+#### Runtime Classification
+Each syscall window is evaluated independently and assigned a severity class in real time:
+
+- NORMAL → expected execution
+- SUSPICIOUS → behavioral deviation
+- ANOMALOUS → likely misuse or exploit behavior
+- CRITICAL → severe deviation requiring intervention
+
+This completes Sentinel’s detection loop:
+> kernel trace → feature encoding → ML inference → calibrated decision
+
+#### Experimental Outcome
+On live syscall traces:
+- Most windows classified as **NORMAL**
+- Natural variance appears as **SUSPICIOUS**
+- Rare **ANOMALOUS** windows detected
+- No false **CRITICAL** escalation during benign runs
+
+**Key Insight:**  
+Accurate behavioral detection depends more on **representation and calibration** than on model complexity.
+
+---

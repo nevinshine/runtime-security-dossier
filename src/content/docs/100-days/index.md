@@ -7,12 +7,13 @@ sidebar:
 
 > **Goal:** Building a hardened Linux environment, security tools, and automation scripts from scratch.  
 > **Tech Stack:** Linux (Ubuntu), Bash, UFW, OpenSSH, Python.  
-> **Current Status:** <span style="color:#39FF14; font-weight:bold;">🟢 Active (Day 10/100)</span>
+> **Current Status:** <span style="color:#39FF14; font-weight:bold;">🟢 Active (Day 12/100)</span>
 
 ## 📂 Progress Log
 
 | Day | Topic | Description | Status |
 | :--- | :--- | :--- | :--- |
+| **Day 12** | Runtime Anomaly Classification | Threshold-calibrated syscall behavior decision logic | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
 | **Day 11** | Anomaly Score Validation | Kernel-Level Score Interpretation & Stability Analysis | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
 | **Day 10** | Temporal Feature Engineering | Improving Syscall Anomaly Detection via Temporal Bucketing | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
 | **Day 09** | Research Consolidation | Sentinel Sandbox Architecture & Understanding | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
@@ -28,6 +29,27 @@ sidebar:
 ---
 
 ## Detailed Operations Log
+
+### Day 12: Runtime Anomaly Classification (Research)
+
+#### Detailed Operations Log
+- Calibrated anomaly score baselines using **normal syscall traces only**
+- Computed statistical properties of anomaly scores (mean μ, standard deviation σ)
+- Defined severity thresholds based on deviation from normal behavior:
+  - NORMAL (≥ μ − 1σ)
+  - SUSPICIOUS (μ − 2σ to μ − 1σ)
+  - ANOMALOUS (μ − 3σ to μ − 2σ)
+  - CRITICAL (< μ − 3σ)
+- Persisted calibrated thresholds for reuse during runtime detection
+- Implemented runtime classification logic to map syscall windows to severity levels
+- Validated classification on live syscall traces including abnormal workloads
+- Observed stable behavior with conservative anomaly escalation and no critical false positives
+
+**Key Insight:**  
+Feature representation and statistical calibration are more impactful for syscall-based anomaly detection than increasing model complexity.
+
+**Status:** <span style="color:#39FF14; font-weight:bold;">Completed</span>
+
 
 ### Day 11: Kernel Anomaly Score Validation & Interpretation
 **Context**  

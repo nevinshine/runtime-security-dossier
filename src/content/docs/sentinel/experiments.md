@@ -1,0 +1,2 @@
+- ✔ Anomaly scoring pipeline implemented and validated
+- 🔜 Threshold calibration and false-positive analysis
