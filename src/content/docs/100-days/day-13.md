@@ -1,6 +1,8 @@
 ---
 title: "Day 13: Review & Recovery"
 description: "A deliberate recovery and review day to consolidate prior research work."
+sidebar:
+  order: 11
 ---
 
 ### Overview
