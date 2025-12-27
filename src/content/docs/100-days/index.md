@@ -13,6 +13,7 @@ sidebar:
 
 | Day | Topic | Description | Status |
 | :--- | :--- | :--- | :--- |
+| **Day 13** | Review & Recovery | Review of previous chnages | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
 | **Day 12** | Runtime Anomaly Classification | Threshold-calibrated syscall behavior decision logic | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
 | **Day 11** | Anomaly Score Validation | Kernel-Level Score Interpretation & Stability Analysis | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
 | **Day 10** | Temporal Feature Engineering | Improving Syscall Anomaly Detection via Temporal Bucketing | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
@@ -30,9 +31,15 @@ sidebar:
 
 ## Detailed Operations Log
 
+### Day 13: Review & Recovery
+**Focus:**  
+- Reviewed Sentinel Sandbox architecture and recent experiments
+**Reason:**  
+Heavy research and debugging in prior days required a recovery window to avoid rushed or low-quality work.
+**Status:** Completed (No new code changes)
+
 ### Day 12: Runtime Anomaly Classification (Research)
 
-#### Detailed Operations Log
 - Calibrated anomaly score baselines using **normal syscall traces only**
 - Computed statistical properties of anomaly scores (mean μ, standard deviation σ)
 - Defined severity thresholds based on deviation from normal behavior:
