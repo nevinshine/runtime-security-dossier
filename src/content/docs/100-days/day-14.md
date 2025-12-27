@@ -1,5 +1,5 @@
 ---
-title: "Day 14: Incoming Chang"
+title: "Day 14: Incoming Change"
 description: "Threshold calibration & validation"
 ---
 
