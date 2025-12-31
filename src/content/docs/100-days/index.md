@@ -13,6 +13,7 @@ sidebar:
 
 | Day | Topic | Description | Status |
 | :--- | :--- | :--- | :--- |
+| **Day 14** | Research Environment Stabilization | Native Ubuntu + Sentinel Pipeline Validation | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
 | **Day 13** | Review & Recovery | Review of previous chnages | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
 | **Day 12** | Runtime Anomaly Classification | Threshold-calibrated syscall behavior decision logic | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
 | **Day 11** | Anomaly Score Validation | Kernel-Level Score Interpretation & Stability Analysis | <span style="color:#39FF14; font-weight:bold;">Completed</span> |
@@ -30,6 +31,15 @@ sidebar:
 ---
 
 ## Detailed Operations Log
+
+### Day 14: Research Environment Stabilization
+- **Problem:** VM-based development introduced performance overhead and instability during syscall tracing and ML experiments.
+- **Solution:** Migrated to native Ubuntu 22.04 and rebuilt the entire Sentinel Sandbox environment.
+- **Actions Taken:**
+  - CPU-only PyTorch environment
+  - Fixed feature dimension mismatches
+  - Verified end-to-end experiment pipeline
+- **Result:** Stable, reproducible research setup ready for extended experimentation.
 
 ### Day 13: Review & Recovery
 **Focus:**  
