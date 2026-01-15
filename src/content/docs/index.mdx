@@ -1,47 +1,43 @@
 ---
-title: Runtime Security Dossier
-description: Research Notebook of Nevin Shine
+title: Sentinel Runtime
+description: A Linux Kernel Runtime Security System using ptrace and Neural Networks.
 template: splash
 hero:
-  tagline: Systems Security Research • Linux Kernel • Runtime Verification
+  tagline: A Closed-Loop Runtime Control System for Linux.
   actions:
-    - text: View Sentinel Architecture
-      link: /runtime-security-dossier/sentinel-architecture/
+    - text: Read the Research
+      link: /sentinel-architecture/
       icon: right-arrow
       variant: primary
-    - text: Ptrace Mechanics
-      link: /runtime-security-dossier/ptrace-mechanics/
+    - text: View on GitHub
+      link: https://github.com/nevinshine/sentinel-runtime
       icon: external
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Research Domains
+## System Status: M2.0 (Experimental)
+
+<div style="display: flex; gap: 10px; margin-bottom: 20px;">
+  <img src="https://img.shields.io/badge/milestone-M2.0_process_tree-orange?style=flat-square" />
+  <img src="https://img.shields.io/badge/focus-behavioral_edr_kernel-363636?style=flat-square&logo=linux&logoColor=white" />
+</div>
+
+**Sentinel Runtime** is a research-grade EDR (Endpoint Detection & Response) system. It intercepts Linux system calls to enforce semantic security policies in real-time.
+
+Unlike standard syscall monitors, Sentinel M2.0 features **Recursive Process Tracking**, allowing it to monitor entire process trees (shells, scripts, and child processes) without losing context.
 
 <CardGrid>
-	<Card title="Sentinel Architecture" icon="rocket">
-		Design specifications for **Sentinel Runtime**.
-		<br/>
-		- [Active Policy Enforcement](/runtime-security-dossier/sentinel-architecture/architecture)
-		- [Memory Introspection](/runtime-security-dossier/sentinel-architecture/experiments)
+	<Card title="Systems Layer (C)" icon="linux">
+		A high-performance `ptrace` engine that handles <b>PTRACE_EVENT_FORK</b> to automatically attach to child processes.
 	</Card>
-	<Card title="Ptrace Mechanics" icon="magnifier">
-		Low-level documentation on the Linux `ptrace` API.
-		<br/>
-		- Register Mapping (AMD64 ABI)
-		- `PTRACE_PEEKDATA` Teleportation
+	<Card title="Analysis Layer (Python)" icon="seti:python">
+		A WiSARD Weightless Neural Network that evaluates execution context against a semantic policy.
 	</Card>
-	<Card title="Kernel Internals" icon="puzzle">
-		Notes on `task_struct`, Virtual Memory, and the User-Kernel boundary.
+	<Card title="Enforcement" icon="warning">
+		<b>Active Blocking.</b> Sentinel neutralizes malicious syscalls by injecting <code>ENOSYS</code> error codes at the kernel boundary.
 	</Card>
-	<Card title="Threat Models" icon="warning">
-		Analysis of Runtime Code Injection and Syscall Evasion techniques.
-	</Card>
+    <Card title="Coverage" icon="rocket">
+        <b>New in M2.0:</b> Zero-blind-spot monitoring. Sentinel now sees "Grandchild" processes (e.g., bash spawning python spawning ransomware).
+    </Card>
 </CardGrid>
-
----
-
-### Abstract
-This dossier serves as the central laboratory notebook for **Nevin Shine**. It prioritizes depth and architectural decision records (ADRs) over chronological logging.
-
-*“Verba volant, scripta manent.”*

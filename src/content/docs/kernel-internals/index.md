@@ -1,6 +1,6 @@
 ---
-title: Kernel Internals
-description: Notes on Linux Process Management and Memory
+title: Kernel Internals (M2.0)
+description: Notes on Linux Process Management, Memory, and Lineage.
 ---
 
 ## The `task_struct`
@@ -15,6 +15,20 @@ In Linux, every process is represented by a massive structure called `task_struc
     * `ptrace`: A flag indicating if the process is being watched.
 
 > **Research Note:** When we attach `ptrace`, we are essentially flipping a bit in the child's `task_struct` that tells the Scheduler: *"Before you execute a syscall, ask the Parent first."*
+
+---
+
+## Process Lineage (The Family Tree)
+
+The `task_struct` also defines the relationships that Sentinel M2.0 tracks:
+
+* **`real_parent`**: Pointer to the process that created this one (The Shell).
+* **`children`**: A linked list of processes created by this task (The "Grandchildren").
+
+**The Blind Spot:**
+By default, `ptrace` only attaches to the target `task_struct`. It does **not** follow the `children` list.
+**The Fix (M2.0):**
+Using `PTRACE_O_TRACEFORK` instructs the Kernel to automatically attach the tracer to any new `task_struct` that gets added to this list.
 
 ---
 
