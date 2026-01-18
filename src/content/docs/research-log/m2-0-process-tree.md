@@ -1,10 +1,14 @@
 ---
 title: "M2.0: Recursive Process Tracking"
-description: Overcoming the ptrace blind spot with PTRACE_O_TRACEFORK.
+description: "Overcoming the ptrace blind spot with PTRACE_O_TRACEFORK."
+sidebar:
+  label: "M2.0: Recursive Tracking"
+  order: 2
 ---
 
-**Date:** 2026-01-16
-**Status:** ✅ Operational (M2.0)
+**Date:** 2026-01-16  
+**Status:** ✅ Operational (M2.0)  
+**Focus:** Recursive Tracking / Anti-Evasion
 
 ## The Research Problem
 Standard `ptrace` attachment (`PTRACE_TRACEME`) is shallow. It only traces the immediate process.
@@ -13,11 +17,6 @@ Standard `ptrace` attachment (`PTRACE_TRACEME`) is shallow. It only traces the i
 
 ## The Engineering Solution
 We implemented **Recursive Fork Tracking** using `PTRACE_O_TRACEFORK`. This instructs the Kernel to automatically attach the Sentinel engine to any new process spawned by the tracee *before* it can execute instructions.
-
-### Visual Verification
-*Trace Log capturing a multi-stage evasion attempt (Parent $\to$ Dropper $\to$ Payload).*
-
-![Sentinel M2.0 Recursive Tracking Demo](/runtime-security-dossier/assets/sentinel_demo.gif)
 
 ### 1. Kernel Option Setting
 We instructed the kernel to auto-attach Sentinel to any new process spawned by the tracee, including clones and forks:
@@ -50,6 +49,7 @@ if ((status >> 16) == PTRACE_EVENT_FORK || (status >> 16) == PTRACE_EVENT_CLONE)
 
 ## Verification
 
-* **Scenario:** `bash` (Parent)  executes `recursive_fork` (Child)  spawns `Payload` (Grandchild).
+* **Scenario:** `bash` (Parent) → executes `recursive_fork` (Child) → spawns `Payload` (Grandchild).
 * **Result:** Sentinel successfully intercepted the `mkdir` syscall from the *Grandchild* process (PID 67841) and blocked it based on the policy.
 * **Outcome:** The "Grandchild Blind Spot" is eliminated.
+

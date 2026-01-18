@@ -1,81 +1,42 @@
 ---
-title: Sentinel Architecture (M2.0)
-description: Technical specification of the Sentinel Closed-Loop Control System
+title: System Architecture
+description: The Modular Design of Sentinel Runtime.
+sidebar:
+  label: System Architecture
+  order: 1
 ---
 
-## System Overview
+**Sentinel Runtime** operates as a synchronous **Closed-Loop Control System**. Unlike traditional EDRs that rely on asynchronous logging or post-execution analysis, Sentinel interjects itself into the kernel execution path to make real-time decisions.
 
-Sentinel is a lightweight **Closed-Loop Runtime Control System** for Linux. Unlike traditional EDRs (Endpoint Detection and Response) that rely on signature matching or static binary analysis, Sentinel operates on the **Semantic Level**.
+## High-Level Design
 
-It intercepts the communication between a process tree and the Linux Kernel to establish a "Behavioral Fingerprint" of execution and actively neutralizes threats in real-time.
+The system is composed of three distinct layers, functioning analogously to a biological nervous system:
 
-### The Control Loop (Three-Layer Design)
-
-Sentinel operates as a synchronous feedback control loop between the Kernel, the Semantic Analysis Engine, and the Enforcement Module.
-
-| Layer | Component | Language | Function |
+| Layer | Component | Language | Role |
 | :--- | :--- | :--- | :--- |
-| **0** | **Target Tree** | Binary | The untrusted process tree (e.g., shell $\to$ python $\to$ malware). |
-| **1** | **Interceptor** | C | **The Body.** A recursive `ptrace` engine that auto-attaches to child processes (`PTRACE_O_TRACEFORK`) and extracts state. |
-| **1.5** | **Bridge** | IPC | **The Nervous System.** Dual FIFO pipes (`/tmp/sentinel_req`, `/tmp/sentinel_resp`) for deadlock-free, bidirectional telemetry. |
-| **2** | **Brain** | Python | **The Mind.** A Weightless Neural Network (WiSARD) + Policy Engine that outputs `BENIGN` or `BLOCK`. |
-| **3** | **Enforcer** | C | **The Shield.** Receives the verdict and injects `ENOSYS` into the CPU registers to neutralize malicious syscalls. |
+| **0** | **Target** | Binary | The untrusted process tree (Shells, Scripts, Malware). |
+| **1** | **Interceptor** | C | **The Body.** Captures syscalls via `ptrace` (supports `fork`, `vfork`, `clone`). |
+| **1.5** | **Bridge** | IPC | **The Nervous System.** High-speed FIFO pipes for signal transmission. |
+| **2** | **Brain** | Python | **The Mind.** A Policy Engine that analyzes intent and issues verdicts. |
+| **3** | **Enforcer** | C | **The Hand.** Injects `EPERM` or `ENOSYS` to neutralize threats. |
 
----
+## 1. The Interceptor (Kernel Space Interface)
+The C Engine (`main.c`) is the only component that directly touches the Linux Kernel. It is designed for minimal overhead and maximum visibility.
 
-## The Recursive Platform (M2.0)
+### Recursive Process Tracking
+To prevent evasion via child processes, the engine utilizes a recursive attachment strategy. By setting `PTRACE_O_TRACEFORK`, `PTRACE_O_TRACECLONE`, and `PTRACE_O_TRACEVFORK`, the kernel automatically halts any new child process and attaches the Sentinel tracer before a single instruction is executed.
 
-As of **Milestone 2.0**, Sentinel implements a fully synchronous **Recursive Listen-Think-Act** loop. It monitors not just a single binary, but its entire lineage.
+### Universal Syscall Map
+Linux syscall ABIs vary by architecture and version (e.g., `unlink` vs `unlinkat`). The **Universal Map** (`syscall_map.h`) abstracts these differences, normalizing them into semantic event IDs before sending them to the analysis layer.
 
-### How It Works (The Recursive Scenario)
-1.  **Fork:** The User Shell (`bash`) executes `python3 malware.py`.
-2.  **Attach:** The **Interceptor (C)** detects `PTRACE_EVENT_FORK` and automatically attaches to the new Python process.
-3.  **Event:** The Python Child calls `rename("data/money.csv", "data/money.csv.enc")`.
-4.  **Freeze:** Sentinel traps the child's syscall and pauses the CPU.
-5.  **Introspect:** Sentinel uses `PTRACE_PEEKDATA` to read the file paths from the child's memory.
-6.  **Inference:** The **Brain (Python)** analyzes the intent (Rename + Sensitive File).
-7.  **Verdict:** The Brain outputs `🚨 BLOCK`.
-8.  **Neutralization:** The Interceptor rewrites the child's register to `void` (syscall -1), preventing the ransomware encryption.
+## 2. The Analysis Bridge (IPC)
+To maintain microsecond-latency, Sentinel utilizes raw **Named Pipes (FIFOs)** (`/tmp/sentinel_req`, `/tmp/sentinel_resp`) instead of sockets or HTTP. This ensures a blocking, synchronous communication channel that guarantees the target process remains paused until a verdict is reached.
 
----
+* **Request Protocol:** `SYSCALL:<verb>:<argument>`
+* **Response Protocol:** `1` (ALLOW) or `0` (BLOCK)
 
-## Active Enforcement (M1.1+)
+## 3. The Policy Brain (User Space)
+The Python Engine (`brain.py`) contains the security logic. Decoupling the logic from the C engine allows for hot-swappable policy updates without recompiling the agent.
 
-Sentinel is no longer a passive monitor. It implements a Kernel-Level **Active Policy Engine**.
-
-### The Blocking Mechanism (The "Kill Switch")
-When a malicious syscall is detected, Sentinel performs a surgical **Register Rewrite**:
-
-1.  **Trap:** The process stops at Syscall Entry.
-2.  **Override:** Sentinel writes `-1` into the `ORIG_RAX` register.
-3.  **Resume:** The kernel sees syscall `-1` (invalid), returns `ENOSYS` (Function not implemented), and the process continues without executing the malicious action.
-
-```c
-// Code Snippet: The Neutralization Logic (M1.1)
-if (verdict == BLOCK) {
-    // 1. Invalidate the Syscall Number
-    regs.orig_rax = -1;
-    ptrace(PTRACE_SETREGS, child_pid, NULL, &regs);
-
-    // 2. Resume execution (Kernel performs "No-Op")
-    // The target process receives return code -1 (ENOSYS)
-}
-
-```
-
----
-
-## Deep Introspection (M0.8+)
-
-To understand *intent*, we must look beyond syscall numbers. Sentinel uses `PTRACE_PEEKDATA` to extract string arguments from the child's virtual memory space.
-
-* **Challenge:** The child's memory is isolated from the tracer.
-* **Solution:** We read memory word-by-word (8 bytes) at the address found in the `RSI/RDI` registers until we hit a `NULL` terminator.
-
-### Current Capabilities
-
-* [x] **Syscall Identity:** Tracking `RAX` numbers.
-* [x] **Argument Extraction:** Reading file paths (`mkdir`, `openat`) and strings.
-* [x] **Active Blocking:** Real-time syscall neutralization via `ENOSYS`.
-* [x] **Live Inference:** Sub-millisecond AI verdicts.
-* [x] **Process Tree Tracking (M2.0):** Recursive monitoring of complex execution chains.
+* **Context Awareness:** Tracks the state of operations (e.g., file access patterns).
+* **Heuristics:** Evaluates arguments against "Protected Zones" or known attack vectors (e.g., Ransomware extensions).

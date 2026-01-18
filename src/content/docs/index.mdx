@@ -1,48 +1,43 @@
 ---
 title: Sentinel Runtime
-description: A Linux Kernel Runtime Security System using ptrace and Neural Networks.
+description: A Linux Kernel Runtime Security System.
 template: splash
 hero:
+  title: Sentinel Runtime
   tagline: A Closed-Loop Runtime Control System for Linux.
+  badge:
+    text: M2.1 Universal Defense
+    variant: tip
   actions:
-    - text: Read the Research
+    - text: System Architecture
       link: /runtime-security-dossier/sentinel-architecture/
       icon: right-arrow
       variant: primary
     - text: View on GitHub
       link: https://github.com/nevinshine/sentinel-runtime
       icon: external
+      variant: secondary
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## System Status: M2.0 (Operational)
+<div style="margin-top: 2rem;"></div>
+---
 
-<div>
-  <img src="https://img.shields.io/badge/milestone-M2.0_Recursive_Tracking-blue?style=flat-square&logo=linux" />
-  <img src="https://img.shields.io/badge/focus-behavioral_edr_kernel-363636?style=flat-square" />
-</div>
+<img src="/runtime-security-dossier/assets/sentinel_demo.gif" alt="Sentinel Live Demo" style="width: 100%; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 2rem; box-shadow: 0 0 20px rgba(0,0,0,0.5);" />
 
-**Sentinel Runtime** is a research-grade EDR (Endpoint Detection & Response) system. It intercepts Linux system calls to enforce semantic security policies in real-time.
-
-Unlike standard syscall monitors, Sentinel M2.0 features **Recursive Process Tracking**, allowing it to monitor entire process trees (shells, scripts, and child processes) without losing context.
-
-### Live Demonstration
-*Intercepting a multi-stage fork evasion ("Grandchild") attempt in real-time.*
-
-<img src="/runtime-security-dossier/assets/sentinel_demo.gif" alt="Sentinel M2.0 Live Demo" style="width: 100%; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 2rem;" />
-
+---
 <CardGrid>
-    <Card title="Systems Layer (C)" icon="linux">
-        A high-performance <code>ptrace</code> engine that handles <b>PTRACE_EVENT_FORK</b> to automatically attach to child and grandchild processes.
+    <Card title="Recursive Tracking" icon="magnifier">
+        Tracks <code>fork</code>, <code>vfork</code>, and <code>clone</code> trees. No blind spots.
     </Card>
-    <Card title="Analysis Layer (Python)" icon="seti:python">
-        A WiSARD Weightless Neural Network that evaluates execution context against a semantic policy.
+    <Card title="Universal Map" icon="linux">
+        Normalizes <code>unlink</code> vs <code>unlinkat</code> into semantic events.
     </Card>
-    <Card title="Enforcement" icon="warning">
-        <b>Active Blocking.</b> Sentinel neutralizes malicious syscalls by injecting <code>ENOSYS</code> error codes at the kernel boundary.
+    <Card title="Active Defense" icon="warning">
+        <b>Block-on-Intent.</b> Injects <code>EPERM</code> to stop threats in real-time.
     </Card>
-    <Card title="Coverage" icon="rocket">
-        <b>New in M2.0:</b> Zero-blind-spot monitoring. Sentinel now tracks the full lineage: <i>Parent &rarr; Dropper &rarr; Payload</i>.
+    <Card title="Neural Engine" icon="seti:python">
+        Decoupled Python policy engine for behavioral analysis.
     </Card>
 </CardGrid>

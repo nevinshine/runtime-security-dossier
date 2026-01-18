@@ -1,42 +1,47 @@
 ---
-title: Threat Models (M2.0)
+title: Threat Models & Defense Theory
 description: Attack Vectors and Behavioral Signatures detected by Sentinel.
+sidebar:
+  label: Threat Models
+  order: 12
 ---
+Sentinel is engineered to defeat **Behavioral Threats**—malware that evades static signature detection by looking "clean" on disk but acting maliciously in memory.
 
 ## Behavioral Signatures
 
-Sentinel does not look for "Bad Files" (Signatures). It looks for "Bad Intent" (Behavior).
+Sentinel does not scan for "Bad Files" (Signatures). It scans for "Bad Intent" (Behavior).
 
 ### 1. Ransomware (The Encryptor)
-Ransomware has a very loud syscall profile.
-* **Normal Program:** Reads a file, waits, writes to a log.
-* **Ransomware:** `open` -> `read` -> `encrypt` -> `write` (Repeated 1000x/sec).
-* **Detection:** A sudden spike in `read/write` syscall density targeting user documents.
+Ransomware has a distinct, high-volume syscall profile that differentiates it from normal editing tools.
+
+* **Normal Program:** Reads a file, waits for user input, writes to a temp file.
+* **Ransomware:** `open` &rarr; `read` &rarr; `encrypt` &rarr; `write` (Repeated 1000x/second).
+* **Detection Logic:** A sudden, high-density spike in `read`/`write` syscalls targeting user-owned documents (e.g., PDF, DOCX) triggers the heuristic engine.
 
 ### 2. The Dropper (The Loader)
-Malware often starts as a small script that downloads the real weapon.
-* **Signature:**
+Modern malware often starts as a benign script ("The Dropper") that downloads the actual weaponized payload.
+
+* **The Kill Chain:**
     1.  `socket` / `connect` (Network activity).
     2.  `write` (Saving payload to disk).
-    3.  `mprotect` (Making memory executable).
+    3.  `mprotect` (Making the memory page executable).
     4.  `execve` (Running the payload).
-* **Sentinel Policy:** Block `connect` followed immediately by `execve` in non-browser applications.
+* **Sentinel Policy:** The engine flags sequences where a process establishes an external connection and immediately executes a newly written binary.
 
-### 3. Evasion (Anti-Debugging)
-Malware checks if it is being watched.
-* **Technique:** Calling `ptrace(PTRACE_TRACEME)` on itself.
-* **Result:** If it fails, the malware knows a debugger (Sentinel) is already attached, so it shuts down to hide its behavior.
+### 3. Anti-Debugging Evasion
+Malware often checks if it is being watched by an Analyst or EDR.
 
-### 4. The Grandchild (Process Tree Evasion)
-*Addressed in M2.0*
+* **Technique:** The malware calls `ptrace(PTRACE_TRACEME)` on itself.
+* **The Trap:** Since a process can only be traced by one parent at a time, this call will **fail** if Sentinel is already attached.
+* **Result:** The malware realizes it is being watched and terminates immediately, effectively neutralizing itself.
 
+### 4. Process Tree Evasion (The Grandchild)
 Sophisticated malware attempts to "detach" from the monitor by spawning a child process to perform the attack, assuming the EDR is only watching the parent.
 
-* **Technique:**
+* **The Attack:**
     1.  `Parent` (Bash Script) starts.
-    2.  `Parent` calls `fork()` + `execve()` to launch `Child` (Python Ransomware).
+    2.  `Parent` calls `fork()` to launch `Child` (Python Ransomware).
     3.  `Parent` exits immediately.
-    4.  `Child` is now an orphan, running unwatched by naive tracers.
-* **Sentinel M2.0 Defense:**
-    * **Recursive Tracking:** Using `PTRACE_O_TRACEFORK`, Sentinel automatically attaches to the `Child` the moment it is born.
-    * **Inheritance:** The security policy applied to the Parent is automatically inherited by the Grandchild.
+    4.  `Child` is now an orphan, often running unwatched by naive tracers.
+* **The Defense (Recursive Tracking):**
+    Sentinel uses `PTRACE_O_TRACEFORK` to maintain a persistent grip on the lineage. The moment a Child is born, the Kernel pauses it and hands control to Sentinel. The security policy of the Parent is automatically inherited by the Grandchild, ensuring no "Gap of Authority" exists.
